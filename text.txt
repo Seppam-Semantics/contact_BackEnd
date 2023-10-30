@@ -1,0 +1,13 @@
+/search    - - -   for main search.
+
+/tagcontact  - -  for getting contact with tag name
+
+/ptag   ----- - - for getting all professional tags
+
+/tags  ------------for searching tag name in view tag field
+
+/folder --------- for getting folders name in create tag
+
+/createcontact --- create contact with tags in it.
+
+/createtag ------ creating multiple tags at one time
