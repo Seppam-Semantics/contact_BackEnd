@@ -13,7 +13,7 @@ app.use(express.json());
 
 //----------------------------------------------------------------------------------------------------------------------------------
 // connect and read SQL query from external SQL file
-const overAll = fs.readFileSync(path.join(__dirname, './SQL/overAllSearch.sql'), 'utf-8');
+const overAll = fs.readFileSync(path.join(__dirname, '/SQL/overAllSearch.sql'), 'utf-8');
 
 
 // --------------------------------------------------------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ const data = mysql.createConnection({
 });
 // checking database connection
 data.connect((err) => {
-    if (err) { console.log('Error while connecting the database') }
+    if (err) { console.log(err,'Error while connecting the database') }
     else { console.log('Database conected......') }
 });
 // -------------------------------------------------------------------------------------------------------------------------------
