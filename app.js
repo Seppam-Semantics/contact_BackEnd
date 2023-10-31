@@ -25,6 +25,8 @@ const data = mysql.createConnection({
     port: 3306,
     database: 'sql12658086'
 });
+
+
 // checking database connection
 data.connect((err) => {
     if (err) { console.log(err,'Error while connecting the database') }
@@ -409,7 +411,7 @@ app.get('/single/:contact_Id', (req,res)=>{
     })
 })
 
-app.use(express.static(path.join(__dirname,'dist/contact-2')));
+app.use(express.static(path.join(__dirname,'docs')));
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
