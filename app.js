@@ -19,11 +19,11 @@ const overAll = fs.readFileSync(path.join(__dirname, '/SQL/overAllSearch.sql'), 
 // --------------------------------------------------------------------------------------------------------------------------------
 // create database connection with Backend
 const data = mysql.createConnection({
-    host: 'sql12.freesqldatabase.com',
-    user: 'sql12658086',
-    password: 'Zr8B83ynUX',
+    host: 'localhost',
+    user: 'root',
+    password: '#Abishek001',
     port: 3306,
-    database: 'sql12658086'
+    database: 'contact_management'
 });
 
 
@@ -411,7 +411,7 @@ app.get('/single/:contact_Id', (req,res)=>{
     })
 })
 
-app.use(express.static(path.join(__dirname,'docs')));
+// app.use(express.static(path.join(__dirname,'dist/contact-2')));
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
