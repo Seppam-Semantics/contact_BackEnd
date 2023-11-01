@@ -19,11 +19,11 @@ const overAll = fs.readFileSync(path.join(__dirname, '/SQL/overAllSearch.sql'), 
 // --------------------------------------------------------------------------------------------------------------------------------
 // create database connection with Backend
 const data = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '#Abishek001',
+    host: 'sql12.freesqldatabase.com',
+    user: 'sql12658086',
+    password: 'Zr8B83ynUX',
     port: 3306,
-    database: 'contact_management'
+    database: 'sql12658086'
 });
 
 
