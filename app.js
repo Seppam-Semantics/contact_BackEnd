@@ -1,6 +1,6 @@
 // made all necessary imports
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
@@ -9,6 +9,7 @@ const path = require('path');
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+require('dotenv').config({ path: '/config.env' });
 
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -23,7 +24,7 @@ const data = mysql.createConnection({
     user: 'root',
     password: '#Abishek001',
     port: 3306,
-    database: 'contact_management'
+    database: 'contact_management',
 });
 
 
@@ -126,18 +127,17 @@ app.get('/type',(req,res)=>{
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
-// ------------------------------ get contact by tag name ------------------------------
+// ------------------------------ InActive contact ------------------------------
 
-app.get('/tagcontact', (req, res) => {
-    let tagname = req.body.tagname;
-    let qr = "select A.* from contact_details A inner join contact_tag_linkage B on A.contact_id = B.contact_id  B.tag1 = B.id or A.tag2 = B.id or A.tag3 = B.id or A.tag4 = B.id or A.tag5 = B.id or A.tag6 = B.id or A.tag7 = B.id or A.tag8 = B.id or A.tag9 = B.id or A.tag10 = B.id or A.relationtag = B.id where B.tagname = ?";
-    data.query(qr, [tagname], (err, result) => {
+app.get('/inactivecontact', (req, res) => {
+    let qr = "select * from contact where contact_status = 'N'";
+    data.query(qr, (err, result) => {
         if (err) {
             console.log("error getting data from database");
         }
         if (result.length > 0) {
             res.send({
-                message: "All user datas",
+                message: "All inActive contact datas",
                 data: result
             });
         }
@@ -148,6 +148,60 @@ app.get('/tagcontact', (req, res) => {
         }
     });
 });
+
+app.put('/activeContact', (req,res)=>{
+    let contact_id = req.body.id
+    for(id of contact_id){
+    let qr = "update contact set contact_status = 'Y' where contact_id = ?";
+    data.query(qr,[id],(err,result)=>{
+        if(err){
+            console.log(err, "error upadating data")
+        }
+        else{
+            console.log("Contact activated successfully");
+        }
+    })
+}
+})
+
+// ----------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------ Active Contact List -------------------------------------------------------------------------------
+
+app.get('/activecon', (req, res) => {
+    let qr = "select * from contact where contact_status = 'Y'";
+    data.query(qr, (err, result) => {
+        if (err) {
+            console.log("error getting data from database");
+        }
+        if (result.length > 0) {
+            res.send({
+                message: "All Active contact datas",
+                data: result
+            });
+        }
+        else {
+            res.send({
+                message: "No data found"
+            })
+        }
+    });
+});
+
+app.put('/Inactive', (req,res)=>{
+    let contact_id = req.body.id
+    for(id of contact_id){
+    let qr = "update contact set contact_status = 'N' where contact_id = ?";
+    data.query(qr,[id],(err,result)=>{
+        if(err){
+            console.log(err, "error upadating data")
+        }
+        else{
+            console.log("Contact De-activated successfully");
+        }
+    })
+}
+})
+
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------
@@ -290,7 +344,7 @@ app.post('/createtag', (req, res) => {
     const names = tag_input.tagname;
     const arr = [];
     console.log(names);
-    names.forEach((tag_name) => {
+    for(tag_name of names){
         const qr = "select tag_name from tags where tag_name = ?";
         data.query(qr, [tag_name], (err, result) => {
             if (err) {
@@ -311,12 +365,10 @@ app.post('/createtag', (req, res) => {
             }
             else if (result.length > 0) {
                 arr.push(tag_name);
-                console.log(tag_name);
+                console.log(tag_name,"tag name already exists");
             }
         });
-
-    });
-
+    }
 });
 
 
@@ -411,7 +463,7 @@ app.get('/single/:contact_Id', (req,res)=>{
     })
 })
 
-// app.use(express.static(path.join(__dirname,'dist/contact-2')));
+app.use(express.static(path.join(__dirname,'dist/contact-2')));
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
