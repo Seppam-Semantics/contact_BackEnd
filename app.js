@@ -87,9 +87,8 @@ app.get('/allcontact', (req, res) => {
 });
 
 app.get('/',(req,res)=>{
-    res.send("This is my deployment.....!")
+    console.log("This is my deployment.....!")
 })
-
 // ------------------------------------------------------------------------------------------------------------------------------------
 //         ==============  Contact for relation ================
 
