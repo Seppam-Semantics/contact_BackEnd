@@ -3,13 +3,15 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const app = express();
+const app = express.Router();
 const fs = require('fs');
 const path = require('path');
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 require('dotenv').config({ path: '/config.env' });
+const serverless = require('serverless-http');
+const router  = express();
 
 
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -469,6 +471,8 @@ app.get('/single/:contact_Id', (req,res)=>{
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-app.listen(4000, () => {
-    console.log('Server Started with port 4000')
-})
+// app.listen(4000, () => {
+//     console.log('Server Started with port 4000')
+// })
+app.use('/.netlify/functions/api', app);
+module.exports.handler = serverless (router);
