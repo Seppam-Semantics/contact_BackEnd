@@ -463,7 +463,7 @@ app.get('/single/:contact_Id', (req,res)=>{
     })
 })
 
-app.use(express.static(path.join(__dirname,'dist/contact-2')));
+// app.use(express.static(path.join(__dirname,'dist/contact-2')));
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
