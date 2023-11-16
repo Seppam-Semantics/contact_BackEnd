@@ -85,11 +85,7 @@ data.connect((err) => {
 });
 // -------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
 //                             ======== Main Search =======
-
 
 // Get all data by main search
 router.get('/search', (req, res) => {
@@ -138,8 +134,25 @@ router.get('/allcontact', (req, res) => {
     });
 });
 
-router.get('/',(req,res)=>{
-    res.send('This is my deployment.....!');
+
+
+router.get('/foldercontact/:Foldercontact',(req,res)=>{
+    res.header('Access-Control-Allow-Origin', '*');
+    let foldername = req.params.Foldercontact 
+    let qr = `select * from contact A inner join contact_tag_linkage B on A.contact_id=B.contact_id where B.folder = (select tag_id from tags where tag_name = '${foldername}');`;
+    data.query(qr,(err, result)=>{
+        if(err){
+            res.send({message:"Error while getting contact with folder name",
+            Error:err
+        })
+        }
+        else{
+            res.send({
+                message:"contact got successfully",
+                data:result
+            })
+        }
+    })
 })
 // ------------------------------------------------------------------------------------------------------------------------------------
 //         ==============  Contact for relation ================
