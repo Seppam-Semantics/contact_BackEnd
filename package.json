@@ -20,7 +20,7 @@
     "nodemon": "^3.0.1"
   },
   "devDependencies": {
-    "netlify-cli": "^12.7.2",
+    "netlify-cli": "^17.7.0",
     "netlify-lambda": "^2.0.15",
     "serverless-http": "^2.7.0",
     "webpack": "^5.89.0",
