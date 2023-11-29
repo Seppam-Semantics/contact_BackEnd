@@ -6,14 +6,19 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const serverless = require('serverless-http');
-const app  = express();
+const app = express();
 const router = express.Router();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(cors({origin:'*', 
+              methods: 'GET, POST, PUT, DELETE, OPTIONS', 
+              allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+              credentials: true}));
 
 //----------------------------------------------------------------------------------------------------------------------------------
-// connect and read SQL query from external SQL file
-// const overAll = fs.readFileSync(path.join(__dirname, 'overAllSearch.sql'), 'utf-8');
-// const filePath = '/var/task/functions/overAllSearch.sql';
+
 const overAll = `select A.contact_id, A.contact_name, A.contact_phone, A.contact_phone1, A.contact_phone2,
 A.contact_email, A.contact_email1, A.contact_address, A.contact_address1,
 (select C.tag_name from tags C  where C.tag_id = B.folder limit 1) as Folder,
@@ -70,17 +75,17 @@ where A.contact_status = "Y" AND (A.contact_name like ? or
 // --------------------------------------------------------------------------------------------------------------------------------
 // create database connection with Backend
 const data = mysql.createConnection({
-    host: 'sql12.freesqldatabase.com',
-    user: 'sql12660488',
-    password: 'rSEiCa3Knu',
+    host: 'contact-test.c1hc2il42dkf.ap-south-1.rds.amazonaws.com',
+    user: 'admin',
+    password: 'seppam-test',
     port: 3306,
-    database: 'sql12660488',
+    database: 'contact_management',
 });
 
 
 // checking database connection
 data.connect((err) => {
-    if (err) { console.log(err,'Error while connecting the database') }
+    if (err) { console.log(err, 'Error while connecting the database') }
     else { console.log('Database conected......') }
 });
 // -------------------------------------------------------------------------------------------------------------------------------
@@ -89,7 +94,6 @@ data.connect((err) => {
 
 // Get all data by main search
 router.get('/search', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
     let name = req.query.name;
     const add = '%' + name + '%';
     const qr = overAll.replaceAll('?', mysql.escape(add));
@@ -125,7 +129,7 @@ router.get('/allcontact', (req, res) => {
         if (err) {
             console.log('Error while getting contacts', err)
         }
-        if (result.length > 0) {
+        else {
             res.send({
                 message: "All Contacts are here",
                 data: result
@@ -136,20 +140,21 @@ router.get('/allcontact', (req, res) => {
 
 
 
-router.get('/foldercontact/:Foldercontact',(req,res)=>{
+router.get('/foldercontact/:Foldercontact', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
-    let foldername = req.params.Foldercontact 
+    let foldername = req.params.Foldercontact
     let qr = `select * from contact A inner join contact_tag_linkage B on A.contact_id=B.contact_id where B.folder = (select tag_id from tags where tag_name = '${foldername}');`;
-    data.query(qr,(err, result)=>{
-        if(err){
-            res.send({message:"Error while getting contact with folder name",
-            Error:err
-        })
-        }
-        else{
+    data.query(qr, (err, result) => {
+        if (err) {
             res.send({
-                message:"contact got successfully",
-                data:result
+                message: "Error while getting contact with folder name",
+                Error: err
+            })
+        }
+        else {
+            res.send({
+                message: "contact got successfully",
+                data: result
             })
         }
     })
@@ -157,17 +162,17 @@ router.get('/foldercontact/:Foldercontact',(req,res)=>{
 // ------------------------------------------------------------------------------------------------------------------------------------
 //         ==============  Contact for relation ================
 
-router.get('/relcontact', (req,res)=>{
+router.get('/relcontact', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let qr = "select Contact_id, contact_name, contact_phone from contact";
-    data.query(qr, (err,result)=>{
-        if(err){
+    data.query(qr, (err, result) => {
+        if (err) {
             console.log(err);
         }
-        else{
+        else {
             res.send({
-                message:"All contact are gathered",
-                data:result
+                message: "All contact are gathered",
+                data: result
             })
         }
     })
@@ -176,19 +181,19 @@ router.get('/relcontact', (req,res)=>{
 
 //              ================= getting tagtype for creating tags==================
 
-router.get('/type',(req,res)=>{
+router.get('/type', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let qr = "select * from tagtype"
-    data.query(qr, (err, result)=>{
-        if(err){
+    data.query(qr, (err, result) => {
+        if (err) {
             console.log(err)
             res.send({
-                message:"Error while getting message"
+                message: "Error while getting message"
             })
         }
-        else{
+        else {
             res.send({
-                data:result
+                data: result
             })
         }
     })
@@ -219,20 +224,20 @@ router.get('/inactivecontact', (req, res) => {
     });
 });
 
-router.put('/activeContact', (req,res)=>{
+router.put('/activeContact', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let contact_id = req.body.id
-    for(id of contact_id){
-    let qr = "update contact set contact_status = 'Y' where contact_id = ?";
-    data.query(qr,[id],(err,result)=>{
-        if(err){
-            console.log(err, "error upadating data")
-        }
-        else{
-            console.log("Contact activated successfully");
-        }
-    })
-}
+    for (id of contact_id) {
+        let qr = "update contact set contact_status = 'Y' where contact_id = ?";
+        data.query(qr, [id], (err, result) => {
+            if (err) {
+                console.log(err, "error upadating data")
+            }
+            else {
+                console.log("Contact activated successfully");
+            }
+        })
+    }
 })
 
 // ----------------------------------------------------------------------------------------------------------------------------------
@@ -259,20 +264,20 @@ router.get('/activecon', (req, res) => {
     });
 });
 
-router.put('/Inactive', (req,res)=>{
+router.put('/Inactive', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let contact_id = req.body.id
-    for(id of contact_id){
-    let qr = "update contact set contact_status = 'N' where contact_id = ?";
-    data.query(qr,[id],(err,result)=>{
-        if(err){
-            console.log(err, "error upadating data")
-        }
-        else{
-            console.log("Contact De-activated successfully");
-        }
-    })
-}
+    for (id of contact_id) {
+        let qr = "update contact set contact_status = 'N' where contact_id = ?";
+        data.query(qr, [id], (err, result) => {
+            if (err) {
+                console.log(err, "error upadating data")
+            }
+            else {
+                console.log("Contact De-activated successfully");
+            }
+        })
+    }
 })
 
 
@@ -281,19 +286,19 @@ router.put('/Inactive', (req,res)=>{
 
 // ----------------------------- get all professional tagnames for contatct creation-------------------------------
 
-router.get('/rtag', (req,res)=>{
+router.get('/rtag', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let qr = "select tag_name from tags where tag_type_id = (select tagType_id from tagtype where tagtype_name = 'relation')"
-    data.query(qr,(err,result)=>{
-        if(err){
+    data.query(qr, (err, result) => {
+        if (err) {
             res.send({
-                message:"Error while gettin data"
+                message: "Error while gettin data"
             });
         }
-        else{
+        else {
             res.send({
-                message:"All tag",
-                data:result
+                message: "All tag",
+                data: result
             })
         }
     });
@@ -331,19 +336,19 @@ router.get('/tags', (req, res) => {
 
 // ============================ Folder name getting ===============================
 
-router.get('/folder',(req,res)=>{
+router.get('/folder', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let qr = "select tag_name from tags where tag_type_id = 3";
-    data.query(qr,(err,result)=>{
-        if(err){
+    data.query(qr, (err, result) => {
+        if (err) {
             res.send({
-                message:"Error while getting data",
+                message: "Error while getting data",
             })
         }
-        else{
+        else {
             res.send({
-                message:"Folder names",
-                data:result
+                message: "Folder names",
+                data: result
             })
         }
     });
@@ -381,7 +386,7 @@ router.post('/createcontact', (req, res) => {
         else {
             let qr = "insert into contact (contact_name, contact_phone, contact_phone1, contact_phone2, contact_email, contact_email1, contact_address, contact_address1, Relation, contact_status) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
-            data.query(qr, [contact_name, contact_phone, contact_phone1, contact_phone2, contact_email, contact_email1, contact_address, contact_address1,relation,contact_status], (err, result) => {
+            data.query(qr, [contact_name, contact_phone, contact_phone1, contact_phone2, contact_email, contact_email1, contact_address, contact_address1, relation, contact_status], (err, result) => {
                 if (err) {
                     console.log(err);
                     res.send({
@@ -421,7 +426,7 @@ router.post('/createtag', (req, res) => {
     const names = tag_input.tagname;
     const arr = [];
     console.log(names);
-    for(tag_name of names){
+    for (tag_name of names) {
         const qr = "select tag_name from tags where tag_name = ?";
         data.query(qr, [tag_name], (err, result) => {
             if (err) {
@@ -442,7 +447,7 @@ router.post('/createtag', (req, res) => {
             }
             else if (result.length > 0) {
                 arr.push(tag_name);
-                console.log(tag_name,"tag name already exists");
+                console.log(tag_name, "tag name already exists");
             }
         });
     }
@@ -470,25 +475,25 @@ router.put('/updatecontact/:contact_Id', (req, res) => {
     let relation = req.body.relname;
     let relcontactno = req.body.relcontact;
 
-console.log(contact_id);
+    console.log(contact_id);
     let qr = `update contact set contact_name = "${contact_name}", contact_phone = ${contact_phone}, contact_phone1 = ${contact_phone1},  contact_email = "${contact_email}", contact_email1 = "${contact_email1}", contact_address = "${contact_address}", contact_address1 = "${contact_address1}", contact_status = "${contact_status}", relcontactno = "${relcontactno}", relation="${relation}" where contact_id = ${contact_id}`;
 
     data.query(qr, (err, result) => {
-        if(err){
+        if (err) {
             console.log(err)
             res.send({
                 message: "Error while updating the contact"
             });
         }
-        else{
+        else {
             let qr = `UPDATE contact_tag_linkage SET folder = (SELECT tag_id FROM tags WHERE tag_name = "${folder}"),  reltag = (SELECT tag_id FROM tags WHERE tag_name = "${reltag}"), ${tag_names.map((_, index) => `tag${index + 1}=(SELECT tag_id FROM tags WHERE tag_name = ?)`).join(', ')} WHERE contact_id = ${contact_id}`;
-            data.query(qr, [...tag_names], (err, result)=>{
-                if(err){
+            data.query(qr, [...tag_names], (err, result) => {
+                if (err) {
                     console.log(err, "Error while updating the values");
                 }
-                else{
+                else {
                     res.send({
-                        message:"Data updated successfully"
+                        message: "Data updated successfully"
                     })
                 }
 
@@ -499,7 +504,7 @@ console.log(contact_id);
 
 // get single data
 
-router.get('/single/:contact_Id', (req,res)=>{
+router.get('/single/:contact_Id', (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     let contact_Id = req.params.contact_Id
     let qr = `select A.*, 
@@ -527,35 +532,79 @@ router.get('/single/:contact_Id', (req,res)=>{
     (select tag_name from tags where tag_id = B.tag19) as tag19,
     (select tag_name from tags where tag_id = B.tag20) as tag20
     from contact A inner join contact_tag_linkage B on A.contact_id = B.contact_id where A.contact_id=?;`;
-    data.query(qr,[contact_Id],(err,result)=>{
-        if(err){
+    data.query(qr, [contact_Id], (err, result) => {
+        if (err) {
             console.log(err);
         }
-        if(result.length>0){
+        if (result.length > 0) {
             res.send({
-                message:"All contact details",
-                data:result,
-                tags : [result[0].tag1,result[0].tag2,result[0].tag3,result[0].tag4,result[0].tag5,result[0].tag6,result[0].tag7,result[0].tag8,result[0].tag9,result[0].tag10,result[0].tag11,result[0].tag12,result[0].tag13,result[0].tag14,result[0].tag15,result[0].tag16,result[0].tag17,result[0].tag18,result[0].tag19,result[0].tag20]
+                message: "All contact details",
+                data: result,
+                tags: [result[0].tag1, result[0].tag2, result[0].tag3, result[0].tag4, result[0].tag5, result[0].tag6, result[0].tag7, result[0].tag8, result[0].tag9, result[0].tag10, result[0].tag11, result[0].tag12, result[0].tag13, result[0].tag14, result[0].tag15, result[0].tag16, result[0].tag17, result[0].tag18, result[0].tag19, result[0].tag20]
             })
         }
     })
 })
 
-// app.use(express.static(path.join(__dirname,'dist/contact-2')));
+
+router.get('/login',(req,res)=>{
+    res.header('Access-Control-Allow-Origin', '*');
+    let qr = `select * from login`
+    data.query(qr,(err,result)=>{
+        if(err){
+            res.send({
+                message:"error while getting data"
+            })
+            console.log(err);
+        }
+        else{
+            res.send({
+                data:result
+            })
+        }
+    })
+});
+
+router.get('/forgetpass/:data',(req,res)=>{
+    res.header('Access-Control-Allow-Origin', '*');
+    let remail = req.params.data;
+    let qr = `select * from login where email = ?`;
+    data.query(qr, [remail], (err, result)=>{
+        if(result.length == 0){
+            res.send({
+                message: "Fail"
+            })
+        }
+        else{
+            res.send({
+                message:"ok",
+                data:result
+            })
+        }
+    })
+})
+
+router.post('/register',(req,res)=>{
+    res.header('Access-Control-Allow-Origin', '*');
+    let name = req.body.regname;
+    let mobile = req.body.regmobile;
+    let email = req.body.regemail;
+    let password = req.body.regpassword;
+    let qr = "insert into login (name, mobile, email, password) values ( ?, ?, ?, ? );";
+    data.query(qr,[name,mobile,email,password],(err,result)=>{
+        if(!err){
+            res.send({ message: 'ok' });
+            console.log(result);
+        }
+        else{
+            console.log(err);
+        }
+    })
+})
+
 
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// app.listen(4000, () => {
-//     console.log('Server Started with port 4000')
-// })
 app.use('/.netlify/functions/app', router);
-app.use(cors());
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-  });
-app.use(bodyParser.json());
-app.use(express.json());
-module.exports.handler = serverless (app);
+
+module.exports.handler = serverless(app);
