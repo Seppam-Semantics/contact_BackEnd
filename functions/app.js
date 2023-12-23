@@ -1,21 +1,26 @@
 // made all necessary imports
 const express = require('express');
 const mysql = require('mysql2');
-const cors = require('cors');
+
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const serverless = require('serverless-http');
 const app = express();
 const router = express.Router();
+const cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(cors({origin:'*', 
-              methods: 'GET, POST, PUT, DELETE, OPTIONS', 
-              allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-              credentials: true}));
+app.use(
+    cors(
+        {   
+        origin: '*', 
+        methods: 'GET, POST, PUT, DELETE, OPTIONS', 
+        allowedHeaders: 'Content-Type'
+        }
+        ));
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -94,6 +99,7 @@ data.connect((err) => {
 
 // Get all data by main search
 router.get('/search', (req, res) => {
+
     let name = req.query.name;
     const add = '%' + name + '%';
     const qr = overAll.replaceAll('?', mysql.escape(add));
@@ -123,7 +129,7 @@ router.get('/search', (req, res) => {
 //                          ========= All Contacts ==========
 
 router.get('/allcontact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = "select * from contact";
     data.query(qr, (err, result) => {
         if (err) {
@@ -141,7 +147,7 @@ router.get('/allcontact', (req, res) => {
 
 
 router.get('/foldercontact/:Foldercontact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let foldername = req.params.Foldercontact
     let qr = `select * from contact A inner join contact_tag_linkage B on A.contact_id=B.contact_id where B.folder = (select tag_id from tags where tag_name = '${foldername}');`;
     data.query(qr, (err, result) => {
@@ -163,7 +169,7 @@ router.get('/foldercontact/:Foldercontact', (req, res) => {
 //         ==============  Contact for relation ================
 
 router.get('/relcontact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let qr = "select Contact_id, contact_name, contact_phone from contact";
     data.query(qr, (err, result) => {
         if (err) {
@@ -182,7 +188,7 @@ router.get('/relcontact', (req, res) => {
 //              ================= getting tagtype for creating tags==================
 
 router.get('/type', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = "select * from tagtype"
     data.query(qr, (err, result) => {
         if (err) {
@@ -204,7 +210,7 @@ router.get('/type', (req, res) => {
 // ------------------------------ InActive contact ------------------------------
 
 router.get('/inactivecontact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let qr = "select * from contact where contact_status = 'N'";
     data.query(qr, (err, result) => {
         if (err) {
@@ -225,7 +231,7 @@ router.get('/inactivecontact', (req, res) => {
 });
 
 router.put('/activeContact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let contact_id = req.body.id
     for (id of contact_id) {
         let qr = "update contact set contact_status = 'Y' where contact_id = ?";
@@ -244,7 +250,7 @@ router.put('/activeContact', (req, res) => {
 // ------------------------------ Active Contact List -------------------------------------------------------------------------------
 
 router.get('/activecon', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = "select * from contact where contact_status = 'Y'";
     data.query(qr, (err, result) => {
         if (err) {
@@ -265,7 +271,7 @@ router.get('/activecon', (req, res) => {
 });
 
 router.put('/Inactive', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let contact_id = req.body.id
     for (id of contact_id) {
         let qr = "update contact set contact_status = 'N' where contact_id = ?";
@@ -287,7 +293,7 @@ router.put('/Inactive', (req, res) => {
 // ----------------------------- get all professional tagnames for contatct creation-------------------------------
 
 router.get('/rtag', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = "select tag_name from tags where tag_type_id = (select tagType_id from tagtype where tagtype_name = 'relation')"
     data.query(qr, (err, result) => {
         if (err) {
@@ -312,7 +318,7 @@ router.get('/rtag', (req, res) => {
 
 
 router.get('/tags', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = "select tag_name from tags where tag_type_id = (select tagType_id from tagtype where tagtype_name = 'professional')";
     data.query(qr, (err, result) => {
         if (err) {
@@ -337,7 +343,7 @@ router.get('/tags', (req, res) => {
 // ============================ Folder name getting ===============================
 
 router.get('/folder', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let qr = "select tag_name from tags where tag_type_id = 3";
     data.query(qr, (err, result) => {
         if (err) {
@@ -360,7 +366,7 @@ router.get('/folder', (req, res) => {
 
 // ==================== create contact with tags.... ==================================
 router.post('/createcontact', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let contact_name = req.body.name;
     let contact_email = req.body.email;
     let contact_email1 = req.body.email1;
@@ -420,8 +426,8 @@ router.post('/createcontact', (req, res) => {
 // =========================== create tag ===============================
 
 
-router.post('/createtag', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+app.post('/createtag', (req, res) => {
+    res.header('Access-Control-Allow-Origin','*')
     const tag_input = req.body;
     const names = tag_input.tagname;
     const arr = [];
@@ -457,7 +463,7 @@ router.post('/createtag', (req, res) => {
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // // Update contact
 router.put('/updatecontact/:contact_Id', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     console.log(req.body, "Update contact and Update tags");
     let contact_id = req.params.contact_Id;
     let contact_name = req.body.name;
@@ -505,7 +511,7 @@ router.put('/updatecontact/:contact_Id', (req, res) => {
 // get single data
 
 router.get('/single/:contact_Id', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let contact_Id = req.params.contact_Id
     let qr = `select A.*, 
     (select contact_name from contact where contact_id = A.relcontactNo) as relcontactno, 
@@ -548,7 +554,7 @@ router.get('/single/:contact_Id', (req, res) => {
 
 
 router.get('/login',(req,res)=>{
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let qr = `select * from login`
     data.query(qr,(err,result)=>{
         if(err){
@@ -566,7 +572,7 @@ router.get('/login',(req,res)=>{
 });
 
 router.get('/forgetpass/:data',(req,res)=>{
-    res.header('Access-Control-Allow-Origin', '*');
+    
     let remail = req.params.data;
     let qr = `select * from login where email = ?`;
     data.query(qr, [remail], (err, result)=>{
@@ -585,7 +591,7 @@ router.get('/forgetpass/:data',(req,res)=>{
 })
 
 router.post('/register',(req,res)=>{
-    res.header('Access-Control-Allow-Origin', '*');
+   
     let name = req.body.regname;
     let mobile = req.body.regmobile;
     let email = req.body.regemail;
