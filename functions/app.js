@@ -13,14 +13,11 @@ const cors = require('cors');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(
-    cors(
-        {   
-        origin: '*', 
-        methods: 'GET, POST, PUT, DELETE, OPTIONS', 
-        allowedHeaders: 'Content-Type'
-        }
-        ));
+app.use(cors({
+    origin: '*', 
+    methods: 'GET, POST, PUT, DELETE', 
+    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+  }));
 
 //----------------------------------------------------------------------------------------------------------------------------------
 
@@ -425,9 +422,11 @@ router.post('/createcontact', (req, res) => {
 
 // =========================== create tag ===============================
 
+app.use((req,res)=>{
+    res.header('Access-Control-Allow-Origin','*');
 
-app.post('/createtag', (req, res) => {
-    res.header('Access-Control-Allow-Origin','*')
+router.post('/createtag', (req, res) => {
+    
     const tag_input = req.body;
     const names = tag_input.tagname;
     const arr = [];
@@ -458,7 +457,7 @@ app.post('/createtag', (req, res) => {
         });
     }
 });
-
+})
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // // Update contact
@@ -554,7 +553,7 @@ router.get('/single/:contact_Id', (req, res) => {
 
 
 router.get('/login',(req,res)=>{
-    
+    res.header('Access-Control-Allow-Origin','*');
     let qr = `select * from login`
     data.query(qr,(err,result)=>{
         if(err){
