@@ -12,13 +12,20 @@ const cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({ origin : 'http://localhost:4200'}));
+// app.use(cors({
+//     origin: '*', 
+//     methods: 'GET, POST, PUT, DELETE', 
+//     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+//   }));
 
-app.use(cors({
-    origin: '*', 
-    methods: 'GET, POST, PUT, DELETE', 
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-  }));
 
+router.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+  });
 //----------------------------------------------------------------------------------------------------------------------------------
 
 const overAll = `select A.contact_id, A.contact_name, A.contact_phone, A.contact_phone1, A.contact_phone2,
@@ -422,11 +429,8 @@ router.post('/createcontact', (req, res) => {
 
 // =========================== create tag ===============================
 
-app.use((req,res)=>{
-    res.header('Access-Control-Allow-Origin','*');
-
 router.post('/createtag', (req, res) => {
-    
+    res.header( 'Access-Control-Allow-origin' , 'http://localhost:4200');
     const tag_input = req.body;
     const names = tag_input.tagname;
     const arr = [];
@@ -457,7 +461,6 @@ router.post('/createtag', (req, res) => {
         });
     }
 });
-})
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // // Update contact
@@ -552,8 +555,12 @@ router.get('/single/:contact_Id', (req, res) => {
 })
 
 
+// app.get('/.netlify/functions/app/login',(req,res)=>{
+//     res.header('Access-Control-Allow-Origin','*');
+// })
+
 router.get('/login',(req,res)=>{
-    res.header('Access-Control-Allow-Origin','*');
+    
     let qr = `select * from login`
     data.query(qr,(err,result)=>{
         if(err){
@@ -569,6 +576,7 @@ router.get('/login',(req,res)=>{
         }
     })
 });
+
 
 router.get('/forgetpass/:data',(req,res)=>{
     
@@ -611,5 +619,6 @@ router.post('/register',(req,res)=>{
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 app.use('/.netlify/functions/app', router);
+
 
 module.exports.handler = serverless(app);
